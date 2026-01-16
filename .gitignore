@@ -5,6 +5,19 @@ __pycache__/
 *.pyd
 .env
 
+# Data files
+data/
+lakehouse/
+
+# Spark local artifacts
+spark-warehouse/
+metastore_db/
+
+# AWS / secrets
+*.pem
+*.key
+.env
+
 # Airflow
 airflow/logs/
 airflow/plugins/__pycache__/
