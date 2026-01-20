@@ -2,10 +2,21 @@ from pyspark.sql import SparkSession
 from pyspark.sql.functions import (
     col, regexp_extract, to_timestamp, lit,
     when, current_timestamp, input_file_name,
-    year, month, dayofmonth, hour
+    year, month, dayofmonth, hour,regexp_replace, split, lower, udf, col
 )
-from pyspark.sql.functions import regexp_replace, col
 
+from urllib.parse import unquote
+from pyspark.sql.types import StringType
+from pyspark.sql.functions import udf
+
+@udf(returnType=StringType())
+def url_decode(value):
+    if value is None:
+        return None
+    try:
+        return unquote(value)
+    except Exception:
+        return value
 
 spark = (
     SparkSession.builder
@@ -72,21 +83,57 @@ parsed = parsed.withColumn(
 parsed = parsed.withColumn("event_date", col("event_timestamp").cast("date")) \
                .withColumn("event_hour", hour("event_timestamp"))
 
+parsed = parsed.withColumn(
+    "uri_path_only",
+    split(col("uri_path"), "\\?").getItem(0)
+).withColumn(
+    "uri_query",
+    split(col("uri_path"), "\\?").getItem(1)
+)
+
+parsed = parsed.withColumn(
+    "uri_path_decoded",
+    url_decode(col("uri_path_only"))
+).withColumn(
+    "uri_query_decoded",
+    url_decode(col("uri_query"))
+)
+
+parsed = parsed.withColumn(
+    "is_bot",
+    lower(col("user_agent")).rlike("bot|crawler|spider")
+)
+
+parsed = parsed.withColumn(
+    "bot_name",
+    when(lower(col("user_agent")).like("%ahrefs%"), "AhrefsBot")
+    .when(lower(col("user_agent")).like("%bingbot%"), "BingBot")
+    .when(lower(col("user_agent")).like("%googlebot%"), "GoogleBot")
+    .otherwise(None)
+)
+
+parsed = parsed.withColumn(
+    "device_type",
+    when(col("is_bot") == True, "bot")
+    .when(lower(col("user_agent")).like("%mobile%"), "mobile")
+    .when(lower(col("user_agent")).like("%android%"), "mobile")
+    .when(lower(col("user_agent")).like("%iphone%"), "mobile")
+    .otherwise("desktop")
+)
 parsed.select(
     "client_ip",
     "event_timestamp",
-    "event_date",
-    "event_hour",
     "http_method",
     "uri_path",
-    "uri_query",
-    "protocol",
+    "uri_path_decoded",
+    "uri_query_decoded",
     "status_code",
-    "response_bytes",
-    "referrer",
     "user_agent",
-    "parse_status",
-    "parse_error"
-).show(2, truncate=False)
+    "is_bot",
+    "bot_name",
+    "device_type",
+    "parse_status"
+).show(5, truncate=False)
+
 
 spark.stop()
