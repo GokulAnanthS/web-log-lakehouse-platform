@@ -1,0 +1,17 @@
+version: 2
+
+sources:
+  - name: gold
+    database: SNOWFLAKE_DEV
+    schema: RAW
+    tables:
+      - name: TRAFFIC_DAILY
+        description: "Daily aggregated traffic metrics from Gold layer"
+      - name: TRAFFIC_HOURLY
+        description: "Hourly traffic metrics from Gold layer"
+      - name: URL_PERFORMANCE
+        description: "URL-level performance and popularity metrics"
+      - name: BOT_INTELLIGENCE
+        description: "Bot activity and behavior metrics"
+      - name: CLIENT_BEHAVIOR
+        description: "Per-client/IP behavioral metrics"

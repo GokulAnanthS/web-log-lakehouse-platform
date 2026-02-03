@@ -102,6 +102,20 @@ services:
     command: tail -f /dev/null
 
 
+  dbt:     
+    image: ghcr.io/dbt-labs/dbt-snowflake:1.8.latest
+    container_name: dbt_dev
+    
+    entrypoint: /bin/bash
+    command: -c "tail -f /dev/null"
+    
+    volumes:
+      - ./analytics/dbt:/usr/app
+      - ~/.dbt/profiles.yml:/root/.dbt/profiles.yml
+      
+    working_dir: /usr/app/web_log_analytics
+
+
 volumes:
   postgres-db-volume:
 

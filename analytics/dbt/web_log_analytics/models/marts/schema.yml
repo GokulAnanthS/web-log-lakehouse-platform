@@ -1,0 +1,14 @@
+version: 2
+
+models:
+  - name: mart_traffic_daily
+    columns:
+      - name: event_date
+        tests: [not_null, unique]
+      - name: total_requests
+        tests: [not_null]
+
+  - name: mart_url_performance
+    columns:
+      - name: uri_path_decoded
+        tests: [not_null]
