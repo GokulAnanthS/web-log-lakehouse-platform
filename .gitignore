@@ -13,6 +13,11 @@ lakehouse/
 spark-warehouse/
 metastore_db/
 
+# dbt
+analytics/dbt/web_log_analytics/target/
+analytics/dbt/web_log_analytics/logs/
+.dbt/
+
 # AWS / secrets
 *.pem
 *.key
@@ -37,4 +42,3 @@ mlruns/
 Thumbs.db
 
 lakehouse/
-data_sample/
